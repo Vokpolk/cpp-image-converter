@@ -95,8 +95,12 @@ Image LoadBMP(const Path& file) {
 
     BitmapFileHeader file_;
     BitmapInfoHeader info_;
-    ifs.read(reinterpret_cast<char*>(&file_), sizeof(file_));
-    ifs.read(reinterpret_cast<char*>(&info_), sizeof(info_));
+    if (!ifs.read(reinterpret_cast<char*>(&file_), sizeof(file_))) {
+        return {};
+    }
+    if (!ifs.read(reinterpret_cast<char*>(&info_), sizeof(info_))) {
+        return {};
+    }
 
     if (file_.header[0] != 'B' && file_.header[1] != 'M') {
         return {};
@@ -112,7 +116,9 @@ Image LoadBMP(const Path& file) {
 
     for (int y = h - 1; y >= 0; y--) {
         Color* line = result.GetLine(y);
-        ifs.read(buff.data(), bmp_stride);
+        if (!ifs.read(buff.data(), bmp_stride)) {
+            return {};
+        }
 
         for (int x = 0; x < w; ++x) {
             line[x].b = static_cast<byte>(buff[x * 3 + 0]);
