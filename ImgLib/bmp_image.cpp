@@ -36,7 +36,11 @@ PACKED_STRUCT_END
 
 // функция вычисления отступа по ширине
 static int GetBMPStride(int w) {
-    return 4 * ((w * 3 + 3) / 4);
+    int colors_count = 3;
+    int leveling = 4;
+    int round_up = 3;
+
+    return leveling * ((w * colors_count + round_up) / leveling);
 }
 
 bool SaveBMP(const Path& file, const Image& image) {
@@ -93,6 +97,10 @@ Image LoadBMP(const Path& file) {
     BitmapInfoHeader info_;
     ifs.read(reinterpret_cast<char*>(&file_), sizeof(file_));
     ifs.read(reinterpret_cast<char*>(&info_), sizeof(info_));
+
+    if (file_.header[0] != 'B' && file_.header[1] != 'M') {
+        return {};
+    }
 
     const int w = info_.width;
     const int h = info_.height;
